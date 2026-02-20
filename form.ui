@@ -1,0 +1,780 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1200</width>
+    <height>800</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1000</width>
+    <height>700</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Характеристики нелинейности и хаотичности</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="styleSheet">
+    <string>
+/* === Background === */
+#centralwidget {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f5f7fa, stop:1 #c3cfe2);
+}
+
+/* === Header === */
+QFrame#headerFrame {
+    background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #667eea, stop:1 #764ba2);
+    border-radius: 15px;
+    padding: 15px;
+}
+QLabel#titleLabel {
+    color: white;
+    font-size: 24pt;
+    font-weight: bold;
+    background: transparent;
+}
+QLabel#subtitleLabel {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 11pt;
+    font-weight: normal;
+    background: transparent;
+}
+
+/* === Group Boxes === */
+QGroupBox {
+    font-weight: bold;
+    font-size: 12pt;
+    color: #2c3e50;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    margin-top: 15px;
+    padding-top: 15px;
+    background: white;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 10px;
+    padding: 0 10px;
+}
+QGroupBox#parametersGroupBox { border-color: #e74c3c; }
+QGroupBox#jumpGroupBox { border-color: #f39c12; }
+QGroupBox#actionsGroupBox { border-color: #27ae60; }
+
+/* === Labels === */
+QGroupBox QLabel {
+    font-weight: bold;
+    font-size: 10pt;
+    color: #34495e;
+    background: transparent;
+}
+
+/* === Line Edits === */
+QLineEdit {
+    font-size: 10pt;
+    font-weight: bold;
+    color: #2c3e50;
+    padding: 6px;
+    border: 2px solid #bdc3c7;
+    border-radius: 6px;
+    background: #ecf0f1;
+}
+QLineEdit:focus {
+    color: #2c3e50;
+    border-color: #3498db;
+    background: white;
+}
+QLineEdit#lineEdit_n {
+    font-size: 11pt;
+    padding: 8px;
+}
+QLineEdit#lineEdit_n:focus {
+    border-color: #f39c12;
+}
+
+/* === ComboBox === */
+QComboBox {
+    font-size: 11pt;
+    color: #2c3e50;
+    padding: 8px;
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    background: white;
+}
+QComboBox QAbstractItemView {
+    color: #2c3e50;
+    background: white;
+    selection-background-color: #3498db;
+    selection-color: white;
+}
+QComboBox:hover { border-color: #3498db; }
+QComboBox::drop-down { border: none; width: 30px; }
+QComboBox::down-arrow {
+    image: none;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 8px solid #34495e;
+    margin-right: 10px;
+}
+
+/* === Buttons — common === */
+QPushButton {
+    font-weight: bold;
+    font-size: 10pt;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+/* Blue — data input */
+QPushButton#pushButton_inputData {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #3498db, stop:1 #2980b9);
+}
+QPushButton#pushButton_inputData:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5dade2, stop:1 #3498db);
+}
+QPushButton#pushButton_inputData:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2980b9, stop:1 #1f618d);
+}
+
+/* Purple — statistical tests */
+QPushButton#pushButton_hinich, QPushButton#pushButton_segmentation {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #9b59b6, stop:1 #8e44ad);
+}
+QPushButton#pushButton_hinich:hover, QPushButton#pushButton_segmentation:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #bb8fce, stop:1 #9b59b6);
+}
+QPushButton#pushButton_hinich:pressed, QPushButton#pushButton_segmentation:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #8e44ad, stop:1 #6c3483);
+}
+
+/* Red — fractal analysis */
+QPushButton#pushButton_herstLyapunov, QPushButton#pushButton_hoelder {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e74c3c, stop:1 #c0392b);
+}
+QPushButton#pushButton_herstLyapunov:hover, QPushButton#pushButton_hoelder:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ec7063, stop:1 #e74c3c);
+}
+QPushButton#pushButton_herstLyapunov:pressed, QPushButton#pushButton_hoelder:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #c0392b, stop:1 #922b21);
+}
+
+/* Green — kurtosis */
+QPushButton#pushButton_curth {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #27ae60, stop:1 #229954);
+}
+QPushButton#pushButton_curth:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #58d68d, stop:1 #27ae60);
+}
+QPushButton#pushButton_curth:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #229954, stop:1 #1e8449);
+}
+
+/* Orange — bifurcation */
+QPushButton#pushButton_bifurcation {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f39c12, stop:1 #e67e22);
+}
+QPushButton#pushButton_bifurcation:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f7dc6f, stop:1 #f39c12);
+}
+QPushButton#pushButton_bifurcation:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #e67e22, stop:1 #d35400);
+}
+
+/* Yellow-orange — spectrogram */
+QPushButton#pushButton_spectrogram {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f39c12, stop:1 #d68910);
+}
+QPushButton#pushButton_spectrogram:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #f5b041, stop:1 #f39c12);
+}
+QPushButton#pushButton_spectrogram:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d68910, stop:1 #b9770e);
+}
+
+/* Teal — advanced analysis */
+QPushButton#pushButton_cumulative, QPushButton#pushButton_oscillations {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #16a085, stop:1 #138d75);
+}
+QPushButton#pushButton_cumulative:hover, QPushButton#pushButton_oscillations:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #48c9b0, stop:1 #16a085);
+}
+QPushButton#pushButton_cumulative:pressed, QPushButton#pushButton_oscillations:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #138d75, stop:1 #0e6655);
+}
+
+/* Gray — exit */
+QPushButton#pushButton_exit {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #95a5a6, stop:1 #7f8c8d);
+}
+QPushButton#pushButton_exit:hover {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #b2babb, stop:1 #95a5a6);
+}
+QPushButton#pushButton_exit:pressed {
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #7f8c8d, stop:1 #566573);
+}
+    </string>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>15</number>
+    </property>
+    <property name="leftMargin">
+     <number>20</number>
+    </property>
+    <property name="topMargin">
+     <number>20</number>
+    </property>
+    <property name="rightMargin">
+     <number>20</number>
+    </property>
+    <property name="bottomMargin">
+     <number>20</number>
+    </property>
+    <!-- ======== Header ======== -->
+    <item>
+     <widget class="QFrame" name="headerFrame">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout_header">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="titleLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>ХАРАКТЕРИСТИКИ НЕЛИНЕЙНОСТИ И ХАОТИЧНОСТИ</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="subtitleLabel">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Оценивание показателей нелинейности и хаотичности временного ряда на R скользящих окнах шириной L со сдвигом d</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="wordWrap">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <!-- ======== Parameters Row ======== -->
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_main">
+      <property name="spacing">
+       <number>15</number>
+      </property>
+       <!-- File group -->
+       <item>
+        <widget class="QGroupBox" name="fileGroupBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>1</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size><width>180</width><height>0</height></size>
+         </property>
+         <property name="title">
+          <string>Файл данных</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_file">
+          <property name="spacing">
+           <number>10</number>
+          </property>
+          <item>
+           <widget class="QPushButton" name="pushButton_inputData">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+            </property>
+            <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+            <property name="toolTip"><string>Загрузить файл данных (*.mat, *.txt, *.csv, *.wav)</string></property>
+            <property name="text"><string>Загрузить файл...</string></property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="fileComboBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size><width>0</width><height>40</height></size>
+            </property>
+            <property name="toolTip">
+             <string>Загруженные файлы данных</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      <!-- Parameters group -->
+      <item>
+       <widget class="QGroupBox" name="parametersGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>3</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size><width>400</width><height>0</height></size>
+        </property>
+        <property name="title">
+         <string>Параметры скользящего окна</string>
+        </property>
+        <layout class="QGridLayout" name="gridLayout">
+         <property name="spacing">
+          <number>8</number>
+         </property>
+         <!-- Row 0: L -->
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_L">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Ширина окна L:</string></property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEdit_L">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Ширина скользящего окна (число точек данных)</string></property>
+           <property name="text"><string>200</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 1: K -->
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_K">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Начало отсчёта K:</string></property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lineEdit_K">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Начальная позиция в данных (индекс)</string></property>
+           <property name="text"><string>1</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 2: d -->
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_d">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Сдвиг окна d:</string></property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lineEdit_d">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Шаг сдвига окна (число точек)</string></property>
+           <property name="text"><string>100</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 3: m -->
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_m">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Число полос m:</string></property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lineEdit_m">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Количество частотных полос для анализа</string></property>
+           <property name="text"><string>30</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 4: D -->
+         <item row="4" column="0">
+          <widget class="QLabel" name="label_D">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Отклонение D:</string></property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="lineEdit_D">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Порог отклонения для обнаружения аномалий</string></property>
+           <property name="text"><string>4</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 5: R -->
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_R">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Число окон R:</string></property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QLineEdit" name="lineEdit_R">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Количество скользящих окон для анализа</string></property>
+           <property name="text"><string>200</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+         <!-- Row 6: alp -->
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_alp">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Дисконт alp:</string></property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="lineEdit_alp">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Коэффициент экспоненциального сглаживания (от 0.001 до 1.0)</string></property>
+           <property name="text"><string>0.01</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <!-- Jump group -->
+      <item>
+       <widget class="QGroupBox" name="jumpGroupBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size><width>180</width><height>0</height></size>
+        </property>
+        <property name="title">
+         <string>Параметры скачка</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_jump">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <item alignment="Qt::AlignHCenter|Qt::AlignBottom">
+          <widget class="QLabel" name="label_n">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="text"><string>Номер скачка n:</string></property>
+          </widget>
+         </item>
+         <item alignment="Qt::AlignTop">
+          <widget class="QLineEdit" name="lineEdit_n">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip"><string>Порядковый номер скачка для бифуркационного анализа</string></property>
+           <property name="text"><string>1</string></property>
+           <property name="alignment"><set>Qt::AlignCenter</set></property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <!-- ======== Actions / Buttons ======== -->
+    <item>
+     <widget class="QGroupBox" name="actionsGroupBox">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="title">
+       <string>Результаты анализа</string>
+      </property>
+       <layout class="QGridLayout" name="gridLayout_2">
+        <property name="spacing">
+         <number>10</number>
+        </property>
+        <!-- Row 0: statistical tests & fractal analysis -->
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pushButton_hinich">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Проверка гауссовости и линейности ряда</string></property>
+          <property name="text"><string>Тест Хинича</string></property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QPushButton" name="pushButton_herstLyapunov">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Вычисление показателей Херста и Ляпунова</string></property>
+          <property name="text"><string>Херст и Ляпунов</string></property>
+         </widget>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="pushButton_hoelder">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Вычисление показателя Гёльдера (гладкость функции)</string></property>
+          <property name="text"><string>Показатель Гёльдера</string></property>
+         </widget>
+        </item>
+        <item row="0" column="3">
+         <widget class="QPushButton" name="pushButton_segmentation">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Поиск скачков скорости во временном ряде</string></property>
+          <property name="text"><string>Сегментация</string></property>
+         </widget>
+        </item>
+        <item row="0" column="4">
+         <widget class="QPushButton" name="pushButton_curth">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Анализ куртозиса (эксцесса) и пик-фактора</string></property>
+          <property name="text"><string>Куртозис и пик-ф-р</string></property>
+         </widget>
+        </item>
+        <!-- Row 1: bifurcation, cumulative, oscillations, spectrogram, exit -->
+        <item row="1" column="0">
+         <widget class="QPushButton" name="pushButton_bifurcation">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Бифуркационный анализ (требуется сегментация)</string></property>
+          <property name="text"><string>n-я бифуркация</string></property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QPushButton" name="pushButton_cumulative">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Кумулятивные суммы (требуется анализ бифуркации)</string></property>
+          <property name="text"><string>Кумулятивные суммы</string></property>
+         </widget>
+        </item>
+        <item row="1" column="2">
+         <widget class="QPushButton" name="pushButton_oscillations">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>SSA анализ — выделение компонент колебаний</string></property>
+          <property name="text"><string>Колебания (SSA)</string></property>
+         </widget>
+        </item>
+        <item row="1" column="3">
+         <widget class="QPushButton" name="pushButton_spectrogram">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Частотно-временной анализ сигнала</string></property>
+          <property name="text"><string>Спектрограмма</string></property>
+         </widget>
+        </item>
+        <item row="1" column="4">
+         <widget class="QPushButton" name="pushButton_exit">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred"><horstretch>0</horstretch><verstretch>0</verstretch></sizepolicy>
+          </property>
+          <property name="minimumSize"><size><width>0</width><height>40</height></size></property>
+          <property name="toolTip"><string>Закрыть приложение (Ctrl+Q)</string></property>
+          <property name="text"><string>Выход</string></property>
+         </widget>
+        </item>
+       </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <!-- ======== Menu Bar ======== -->
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect><x>0</x><y>0</y><width>1200</width><height>23</height></rect>
+   </property>
+   <property name="styleSheet">
+    <string>
+QMenuBar { background: white; border-bottom: 1px solid #bdc3c7; }
+QMenuBar::item:selected { background: #3498db; color: white; border-radius: 4px; }
+QMenu { background: white; border: 1px solid #bdc3c7; }
+QMenu::item:selected { background: #3498db; color: white; }
+    </string>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title"><string>Файл</string></property>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title"><string>Справка</string></property>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <!-- ======== Status Bar ======== -->
+  <widget class="QStatusBar" name="statusbar">
+   <property name="styleSheet">
+    <string>QStatusBar { background: white; border-top: 1px solid #bdc3c7; color: #34495e; font-size: 9pt; }</string>
+   </property>
+  </widget>
+  <!-- ======== Actions ======== -->
+  <action name="actionOpen">
+   <property name="text"><string>Открыть файл...</string></property>
+   <property name="toolTip"><string>Открыть файл данных для анализа</string></property>
+   <property name="shortcut"><string>Ctrl+O</string></property>
+  </action>
+  <action name="actionExit">
+   <property name="text"><string>Выход</string></property>
+   <property name="shortcut"><string>Ctrl+Q</string></property>
+  </action>
+  <action name="actionAbout">
+   <property name="text"><string>О программе</string></property>
+  </action>
+ </widget>
+ <!-- ======== Tab Order ======== -->
+  <tabstops>
+   <tabstop>pushButton_inputData</tabstop>
+   <tabstop>fileComboBox</tabstop>
+   <tabstop>lineEdit_L</tabstop>
+   <tabstop>lineEdit_K</tabstop>
+   <tabstop>lineEdit_d</tabstop>
+   <tabstop>lineEdit_m</tabstop>
+   <tabstop>lineEdit_D</tabstop>
+   <tabstop>lineEdit_R</tabstop>
+   <tabstop>lineEdit_alp</tabstop>
+   <tabstop>lineEdit_n</tabstop>
+  </tabstops>
+ <resources/>
+ <connections/>
+</ui>
