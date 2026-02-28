@@ -60,7 +60,11 @@ class PlotDialog(QDialog):
     )
 
     # Фильтр для экспорта данных
-    _DATA_FILTER = "CSV (*.csv);;Все файлы (*)"
+    _DATA_FILTER = (
+        "Excel (*.xlsx);;"
+        "CSV (*.csv);;"
+        "Все файлы (*)"
+    )
 
     def __init__(self, parent=None, title="График", figsize=(12, 8),
                  data: Optional[Dict[str, Any]] = None):
@@ -131,7 +135,7 @@ class PlotDialog(QDialog):
     # -- экспорт данных --------------------------------------------------
 
     def _on_export_data(self):
-        """Экспортировать данные анализа в CSV."""
+        """Экспортировать данные анализа в CSV или Excel."""
         if self._data is None:
             QMessageBox.warning(self, "Предупреждение",
                                 "Нет данных для экспорта.")
@@ -143,7 +147,10 @@ class PlotDialog(QDialog):
             return
 
         try:
-            self._write_csv(path, self._data)
+            if path.lower().endswith('.xlsx'):
+                self._write_xlsx(path, self._data)
+            else:
+                self._write_csv(path, self._data)
             logger.info("Данные экспортированы: %s", path)
         except Exception as e:
             QMessageBox.critical(self, "Ошибка",
@@ -178,3 +185,34 @@ class PlotDialog(QDialog):
                     for cols in columns.values()
                 ]
                 writer.writerow(row)
+
+    @staticmethod
+    def _write_xlsx(path: str, data: Dict[str, Any]):
+        """Записать словарь данных в Excel-файл (.xlsx)."""
+        from openpyxl import Workbook
+
+        columns: Dict[str, list] = {}
+        for key, val in data.items():
+            if isinstance(val, np.ndarray):
+                columns[key] = val.tolist()
+            elif isinstance(val, (list, tuple)):
+                columns[key] = list(val)
+            else:
+                columns[key] = [val]
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Данные"
+
+        headers = list(columns.keys())
+        ws.append(headers)
+
+        max_len = max((len(v) for v in columns.values()), default=0)
+        for i in range(max_len):
+            row = [
+                cols[i] if i < len(cols) else None
+                for cols in columns.values()
+            ]
+            ws.append(row)
+
+        wb.save(path)
