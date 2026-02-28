@@ -272,11 +272,12 @@ class MainWindow(QMainWindow):
 
             dialog = self._create_plot_dialog(
                 "Временной ряд данных", figsize=config.plots.figsize_main)
-            H_vvod(self.Y, fig=dialog.figure, **{
+            result = H_vvod(self.Y, fig=dialog.figure, **{
                 k: params[k] for k in (
                     'window_width', 'start_offset', 'window_shift',
                     'num_bands', 'deviation', 'num_windows', 'smoothing_alpha')
             })
+            dialog.set_data({'Y': self.Y, 'Y_сглаженный': result})
             dialog.show_plot()
 
             props = get_signal_properties(self.Y)
@@ -324,6 +325,7 @@ class MainWindow(QMainWindow):
             segment_my, self._WINDOW_PARAMS)
         if result is not None:
             self.J = result
+            self._plot_dialogs[-1].set_data({'J_скачки': result})
 
     def on_curth(self):
         self._run_analysis("Куртозис и пик-фактор", config.plots.figsize_main,
@@ -352,6 +354,7 @@ class MainWindow(QMainWindow):
                 L0=config.parameters.L0, L1=config.parameters.L1,
                 J=self.J, jump_number=params['jump_number'],
                 fig=dialog.figure)
+            dialog.set_data({'DT': self.DT, 'H_Херст': self.H, 'G_Гёльдер': self.G})
             dialog.show_plot()
         except Exception as e:
             self._show_error("Ошибка анализа", e, "Бифуркация")
@@ -371,6 +374,7 @@ class MainWindow(QMainWindow):
             bifurk_my_1(self.DT, self.H, self.G,
                         L0=config.parameters.L0, L1=config.parameters.L1,
                         fig=dialog.figure)
+            dialog.set_data({'DT': self.DT, 'H_Херст': self.H, 'G_Гёльдер': self.G})
             dialog.show_plot()
         except Exception as e:
             self._show_error("Ошибка анализа", e, "Кумулятивные суммы")
@@ -388,7 +392,8 @@ class MainWindow(QMainWindow):
             QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
             dialog = self._create_plot_dialog(
                 "Спектрограмма сигнала", config.plots.figsize_wide)
-            specgram_my(self.Y, fig=dialog.figure)
+            S, F, T = specgram_my(self.Y, fig=dialog.figure)
+            dialog.set_data({'S_спектр': S, 'F_частоты': F, 'T_время': T})
             dialog.show_plot()
         except Exception as e:
             self._show_error("Ошибка анализа", e, "Спектрограмма")
