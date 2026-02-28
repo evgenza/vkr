@@ -31,10 +31,10 @@ def Inform_f(y, step=0.1):
     x = np.arange(0, n + 1, step)
 
     try:
-        f = interp1d(x0, y, kind='quadratic', fill_value='extrapolate')
+        f = interp1d(x0, y, kind='cubic', fill_value='extrapolate')
         ys = f(x)
     except (ValueError, TypeError):
-        f = interp1d(x0, y, kind='linear', fill_value='extrapolate')
+        f = interp1d(x0, y, kind='quadratic', fill_value='extrapolate')
         ys = f(x)
 
     # Гистограмма (аналог MATLAB hist)

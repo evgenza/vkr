@@ -33,7 +33,7 @@ def Herst_my(Y, num_bands, start_offset, window_shift, deviation,
         I.append(Ii)
 
         Dt = fract_dim_f(y)
-        DT.append((Dt + 4 - h + 1.21 * Ii) / 3)
+        DT.append((Dt + 2 - h + 1.21 * Ii) / 3)
 
         Lyap.append(Lyapunov_f(y, num_bands, deviation))
 

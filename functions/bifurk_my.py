@@ -50,7 +50,7 @@ def bifurk_my(Y, num_bands, deviation, L0, L1, J, jump_number, fig=None):
                 h_val = Herst_f(YY)
                 I_val = Inform_f(YY)
                 Dt_val = fract_dim_f(YY)
-                DT.append((Dt_val + 4 - h_val + 1.21 * I_val) / 3)
+                DT.append((Dt_val + 2 - h_val + 1.21 * I_val) / 3)
                 H.append(Hoelder_f(YY))
                 G.append(Lyapunov_f(YY, num_bands, deviation))
             else:

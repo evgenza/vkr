@@ -53,6 +53,10 @@ def Lyapunov_f(y, m, D):
             if idx1 + diff < L and idx2 < L:
                 z1 = y[idx1:L - diff]
                 z2 = y[idx2:L]
+
+                if len(z1) == 0 or len(z2) == 0:
+                    continue
+
                 z = np.abs(z1 - z2[:len(z1)])
 
                 JJ = np.where(z > D * eps)[0]

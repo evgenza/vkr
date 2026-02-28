@@ -162,6 +162,8 @@ class MainWindow(QMainWindow):
         params = self.get_parameters()
         if params is None:
             return None
+        if not self._validate_window_params(params):
+            return None
 
         try:
             QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
@@ -177,6 +179,31 @@ class MainWindow(QMainWindow):
             return None
         finally:
             QApplication.restoreOverrideCursor()
+
+    def _validate_window_params(self, params: Dict[str, Any]) -> bool:
+        """Проверка совместимости параметров окна с длиной данных."""
+        if self.Y is None:
+            return False
+        data_len = len(self.Y)
+        window_width = params.get('window_width', 0)
+        start_offset = params.get('start_offset', 0)
+        window_shift = params.get('window_shift', 1)
+        num_windows = params.get('num_windows', 1)
+        required_len = start_offset + window_width + (num_windows - 1) * window_shift
+        if window_width > data_len:
+            self._show_warning(
+                "Ошибка параметров",
+                f"Ширина окна L={window_width} превышает длину данных ({data_len}).\n"
+                f"Уменьшите L или загрузите больше данных.")
+            return False
+        if required_len > data_len:
+            max_windows = max(1, (data_len - start_offset - window_width) // window_shift + 1)
+            self._show_warning(
+                "Ошибка параметров",
+                f"Параметры требуют {required_len} отсчётов, доступно {data_len}.\n"
+                f"Максимальное число окон при текущих параметрах: {max_windows}.")
+            return False
+        return True
 
     def get_parameters(self) -> Optional[Dict[str, Any]]:
         try:
@@ -311,6 +338,8 @@ class MainWindow(QMainWindow):
 
         params = self.get_parameters()
         if params is None:
+            return
+        if not self._validate_window_params(params):
             return
 
         try:
