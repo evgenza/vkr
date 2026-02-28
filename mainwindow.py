@@ -7,7 +7,10 @@ import os
 from typing import Optional, List, Dict, Any, Callable
 
 import numpy as np
-from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication, QMainWindow, QFileDialog, QMessageBox,
+    QGroupBox, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QComboBox, QFrame,
+)
 from PySide6.QtGui import QIcon, QCursor, QIntValidator, QDoubleValidator
 from PySide6.QtCore import Qt
 
@@ -22,6 +25,8 @@ from functions import (
     segment_my, Curth_my, bifurk_my, bifurk_my_1,
     SSA_my, specgram_my
 )
+from functions.feature_extractor import extract_features, FEATURE_NAMES
+from functions.anomaly_model import AnomalyModel
 
 logger = logging.getLogger(__name__)
 
@@ -41,10 +46,14 @@ class MainWindow(QMainWindow):
         self.G: Optional[np.ndarray] = None
 
         self._plot_dialogs: List[PlotDialog] = []
+        self._anomaly_model: Optional[AnomalyModel] = None
+        self._training_features: Optional[np.ndarray] = None
+        self._training_file_names: List[str] = []
 
         self._setup_validators()
         self._connect_signals()
         self._connect_menu_actions()
+        self._setup_diagnostic_panel()
         self._load_default_parameters()
 
         logger.info("MainWindow инициализировано")
@@ -400,9 +409,304 @@ class MainWindow(QMainWindow):
         finally:
             QApplication.restoreOverrideCursor()
 
+    # ── Панель диагностики ─────────────────────────────────────────────
+
+    def _setup_diagnostic_panel(self):
+        """Панель диагностики подшипников — справа от параметров скачка."""
+        group = QGroupBox("Диагностика подшипников")
+        group.setMinimumWidth(210)
+        group.setStyleSheet(
+            "QGroupBox { font-weight: bold; border: 2px solid #e74c3c; "
+            "border-radius: 8px; margin-top: 10px; padding-top: 18px; } "
+            "QGroupBox::title { subcontrol-origin: margin; left: 10px; "
+            "padding: 0 5px; color: #e74c3c; }"
+        )
+
+        # Стиль кнопок панели (по умолчанию белый текст без фона)
+        _btn_style = (
+            "QPushButton {{ background: qlineargradient("
+            "x1:0,y1:0,x2:0,y2:1, stop:0 {c1}, stop:1 {c2}); }}"
+            "QPushButton:hover {{ background: qlineargradient("
+            "x1:0,y1:0,x2:0,y2:1, stop:0 {c1h}, stop:1 {c1}); }}"
+            "QPushButton:pressed {{ background: qlineargradient("
+            "x1:0,y1:0,x2:0,y2:1, stop:0 {c2}, stop:1 {c2p}); }}"
+        )
+
+        # ── Алгоритм ──
+        self._diag_combo = QComboBox()
+        self._diag_combo.addItem("Быстрая диагностика")
+        self._diag_combo.addItem("Точная диагностика")
+        self._diag_combo.setItemData(
+            0, "Isolation Forest — быстрый алгоритм,\n"
+            "хорошо работает на больших объёмах данных", Qt.ToolTipRole)
+        self._diag_combo.setItemData(
+            1, "One-Class SVM — точнее определяет границу нормы,\n"
+            "лучше для малых выборок", Qt.ToolTipRole)
+
+        # ── Загрузка данных + Обучение ──
+        btn_load_data = QPushButton("Загрузить данные")
+        btn_load_data.setToolTip("Загрузить файлы здоровых подшипников для обучения")
+        btn_load_data.setMinimumHeight(35)
+        btn_load_data.setStyleSheet(_btn_style.format(
+            c1='#3498db', c2='#2980b9', c1h='#5dade2', c2p='#1f618d'))
+        btn_load_data.clicked.connect(self.on_load_training_data)
+
+        btn_train = QPushButton("Обучить")
+        btn_train.setToolTip("Обучить модель на загруженных данных")
+        btn_train.setMinimumHeight(35)
+        btn_train.setStyleSheet(_btn_style.format(
+            c1='#27ae60', c2='#229954', c1h='#58d68d', c2p='#1e8449'))
+        btn_train.clicked.connect(self.on_train_model)
+
+        # ── Разделитель ──
+        sep1 = QFrame()
+        sep1.setFrameShape(QFrame.Shape.HLine)
+        sep1.setStyleSheet("color: #bdc3c7;")
+
+        # ── Диагностика ──
+        btn_diagnose = QPushButton("Диагностика")
+        btn_diagnose.setToolTip("Проверить текущий сигнал на аномалии")
+        btn_diagnose.setMinimumHeight(35)
+        btn_diagnose.setStyleSheet(_btn_style.format(
+            c1='#e74c3c', c2='#c0392b', c1h='#ec7063', c2p='#922b21'))
+        btn_diagnose.clicked.connect(self.on_diagnose)
+
+        # ── Разделитель ──
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.Shape.HLine)
+        sep2.setStyleSheet("color: #bdc3c7;")
+
+        # ── Сохранить / Загрузить модель ──
+        btn_save = QPushButton("Сохранить")
+        btn_save.setToolTip("Сохранить обученную модель в файл")
+        btn_save.setMinimumHeight(30)
+        btn_save.setStyleSheet(_btn_style.format(
+            c1='#95a5a6', c2='#7f8c8d', c1h='#b2babb', c2p='#566573'))
+        btn_save.clicked.connect(self.on_save_model)
+
+        btn_load_model = QPushButton("Загрузить")
+        btn_load_model.setToolTip("Загрузить ранее сохранённую модель")
+        btn_load_model.setMinimumHeight(30)
+        btn_load_model.setStyleSheet(_btn_style.format(
+            c1='#95a5a6', c2='#7f8c8d', c1h='#b2babb', c2p='#566573'))
+        btn_load_model.clicked.connect(self.on_load_model)
+
+        # ── Статус ──
+        self._diag_status = QLabel("Модель не обучена")
+        self._diag_status.setWordWrap(True)
+        self._diag_status.setStyleSheet(
+            "font-weight: normal; font-size: 9pt; color: #7f8c8d;")
+
+        # ── Компоновка ──
+        vbox = QVBoxLayout(group)
+        vbox.setSpacing(6)
+        vbox.addWidget(self._diag_combo)
+        vbox.addWidget(btn_load_data)
+        vbox.addWidget(btn_train)
+        vbox.addWidget(sep1)
+        vbox.addWidget(btn_diagnose)
+        vbox.addWidget(sep2)
+
+        row_model = QHBoxLayout()
+        row_model.addWidget(btn_save)
+        row_model.addWidget(btn_load_model)
+        vbox.addLayout(row_model)
+
+        vbox.addWidget(self._diag_status)
+        vbox.addStretch()
+
+        # Вставляем в ряд параметров (после "Параметры скачка")
+        self.ui.horizontalLayout_main.addWidget(group, 1)
+
+    def on_load_training_data(self):
+        """Загрузить файлы здоровых подшипников для обучения."""
+        params = self.get_parameters()
+        if params is None:
+            return
+
+        files, _ = QFileDialog.getOpenFileNames(
+            self, "Выберите файлы здоровых подшипников", "",
+            config.files.FILTER)
+        if not files:
+            return
+
+        try:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+
+            all_features = []
+            loaded_names = []
+            for fp in files:
+                Y = load_data_file(fp)
+                if Y is None:
+                    logger.warning("Пропуск файла (not loaded): %s", fp)
+                    continue
+                X = extract_features(
+                    Y,
+                    start_offset=params['start_offset'],
+                    window_shift=params['window_shift'],
+                    window_width=params['window_width'],
+                    num_windows=params['num_windows'],
+                    num_bands=params['num_bands'],
+                    deviation=params['deviation'],
+                )
+                if X.shape[0] > 0:
+                    all_features.append(X)
+                    loaded_names.append(os.path.basename(fp))
+
+            if not all_features:
+                self._show_warning("Ошибка", "Не удалось извлечь признаки ни из одного файла.")
+                return
+
+            self._training_features = np.vstack(all_features)
+            self._training_file_names = loaded_names
+
+            n_files = len(loaded_names)
+            n_windows = self._training_features.shape[0]
+            self._diag_status.setText(
+                f"Загружено: {n_files} файл(ов), {n_windows} окон")
+            QMessageBox.information(
+                self, "Данные загружены",
+                f"Загружено {n_files} файл(ов).\n"
+                f"Извлечено {n_windows} окон признаков.\n"
+                f"Теперь нажмите \u00abОбучить\u00bb.")
+
+        except Exception as e:
+            self._show_error("Ошибка загрузки данных", e)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def on_train_model(self):
+        """Обучить модель на загруженных данных."""
+        if self._training_features is None:
+            self._show_warning("Предупреждение",
+                              "Сначала загрузите данные здоровых подшипников!")
+            return
+
+        try:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+
+            alg = 'ocsvm' if self._diag_combo.currentIndex() == 1 else 'iforest'
+            self._anomaly_model = AnomalyModel(algorithm=alg)
+            self._anomaly_model.train(
+                self._training_features,
+                file_names=self._training_file_names)
+
+            self._diag_status.setText(self._anomaly_model.info)
+            QMessageBox.information(
+                self, "Обучение завершено",
+                f"Модель обучена успешно.\n{self._anomaly_model.info}")
+
+        except Exception as e:
+            self._show_error("Ошибка обучения", e)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def on_diagnose(self):
+        """Диагностировать текущий загруженный сигнал."""
+        if not self._check_data_loaded():
+            return
+        if self._anomaly_model is None or not self._anomaly_model.is_trained:
+            self._show_warning("Предупреждение",
+                               "Сначала обучите или загрузите модель!")
+            return
+
+        params = self.get_parameters()
+        if params is None:
+            return
+        if not self._validate_window_params(params):
+            return
+
+        try:
+            QApplication.setOverrideCursor(QCursor(Qt.CursorShape.WaitCursor))
+            X = extract_features(
+                self.Y,
+                start_offset=params['start_offset'],
+                window_shift=params['window_shift'],
+                window_width=params['window_width'],
+                num_windows=params['num_windows'],
+                num_bands=params['num_bands'],
+                deviation=params['deviation'],
+            )
+
+            result = self._anomaly_model.predict(X)
+
+            # График диагностики
+            dialog = self._create_plot_dialog(
+                "Диагностика подшипника", figsize=(14, 8))
+            fig = dialog.figure
+            ax1, ax2 = fig.subplots(2, 1)
+
+            windows = np.arange(X.shape[0])
+            colors = ['green' if l == 1 else 'red' for l in result.labels]
+
+            ax1.bar(windows, result.scores, color=colors, width=1.0)
+            ax1.axhline(y=0, color='black', linewidth=1, linestyle='--')
+            ax1.set_title(f'Результат: {result.verdict}  |  '
+                          f'Аномалий: {result.anomaly_count}/{result.total_windows} '
+                          f'({result.anomaly_pct:.1f}%)',
+                          fontsize=13, fontweight='bold')
+            ax1.set_ylabel('Скор аномалии')
+            ax1.set_xlabel('Номер окна')
+            ax1.grid(True, alpha=0.3)
+
+            # Временной ряд с подсветкой аномальных участков
+            ax2.plot(self.Y, 'b', linewidth=0.5, alpha=0.7)
+            for idx in result.anomaly_indices:
+                start = params['start_offset'] + idx * params['window_shift']
+                end = min(start + params['window_width'], len(self.Y))
+                ax2.axvspan(start, end, color='red', alpha=0.3)
+            ax2.set_title('Сигнал с подсветкой аномальных участков',
+                          fontsize=13, fontweight='bold')
+            ax2.set_ylabel('Амплитуда')
+            ax2.set_xlabel('Отсчёт')
+            ax2.grid(True, alpha=0.3)
+
+            # Данные для экспорта
+            export_data = {name: X[:, i] for i, name in enumerate(FEATURE_NAMES)}
+            export_data['Результат'] = result.labels
+            export_data['Скор'] = result.scores
+            dialog.set_data(export_data)
+            dialog.show_plot()
+
+            self._diag_status.setText(result.verdict)
+
+        except Exception as e:
+            self._show_error("Ошибка диагностики", e)
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    def on_save_model(self):
+        """Сохранить обученную модель."""
+        if self._anomaly_model is None or not self._anomaly_model.is_trained:
+            self._show_warning("Предупреждение", "Модель не обучена.")
+            return
+        path, _ = QFileDialog.getSaveFileName(
+            self, "Сохранить модель", "model.pkl",
+            "Модель (*.pkl);;Все файлы (*)")
+        if path:
+            try:
+                self._anomaly_model.save(path)
+                QMessageBox.information(self, "Сохранено",
+                                        f"Модель сохранена: {path}")
+            except Exception as e:
+                self._show_error("Ошибка сохранения", e)
+
+    def on_load_model(self):
+        """Загрузить ранее сохранённую модель."""
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Загрузить модель", "",
+            "Модель (*.pkl);;Все файлы (*)")
+        if path:
+            try:
+                self._anomaly_model = AnomalyModel.load(path)
+                self._diag_status.setText(self._anomaly_model.info)
+                QMessageBox.information(self, "Загружено",
+                                        f"Модель загружена.\n{self._anomaly_model.info}")
+            except Exception as e:
+                self._show_error("Ошибка загрузки", e)
+
 
 if __name__ == "__main__":
-    # Настройка логгирования
     setup_logging()
     logger.info("Запуск приложения")
 
